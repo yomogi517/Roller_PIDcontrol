@@ -18,7 +18,7 @@ Ticker flip;
 void send(char add, char data);
 void get_rpm();
 void get_angle();
-int roller_PID();
+int roller_PID(float target_rpm);
 
 int pulse;
 double true_rpm;
@@ -48,10 +48,13 @@ int main(){
         //printf("m:%d L:%d R:%d Lx%d Ly%d\n",button_maru,L1,R1,Lx,Ly);
         printf("pulse:%6.0d motordata: %3.0d %5.2lf[rpm]  \n", pulse, true_roller_data, true_rpm);
 
+
+
         if(ps3.getButtonState(PS3::maru)){
+            roller_PID(2500.0);
             send(ADDRESS_ROLLER, true_roller_data);
         }else{
-            send(ADDRESS_ROLLER, true_roller_data);
+            send(ADDRESS_ROLLER, 0x80);
         }
 
     }
