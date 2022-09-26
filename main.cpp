@@ -4,15 +4,15 @@
 #include "QEI.h"
 #include "PIDcontroller.h"
 
-#define ADDRESS_ROLLER 0x60
+#define ADDRESS_ROLLER 0x14
 
 I2C i2c(D14,D15);
 PS3 ps3 (A0,A1);
 DigitalOut sig(D13);
 
-PID roller(1000.0 , 0.0, 0.0 , 0.050);
+PID roller(100.0 , 20.0, 50.0 , 0.050);
 
-QEI encoder_roller( D2, D3, NC, 2048, QEI::X2_ENCODING);
+QEI encoder_roller( D5, D4, NC, 2048, QEI::X2_ENCODING);
 Ticker flip;
 
 void send(char add, char data);
@@ -26,6 +26,7 @@ double angle;
 
 char roller_data;
 char true_roller_data;
+char stop;
 
 int main(){
 
@@ -48,16 +49,21 @@ int main(){
         //printf("m:%d L:%d R:%d Lx%d Ly%d\n",button_maru,L1,R1,Lx,Ly);
         printf("pulse:%6.0d motordata: %3.0d %5.2lf[rpm]  \n", pulse, true_roller_data, true_rpm);
 
-
+    
 
         if(ps3.getButtonState(PS3::maru)){
             roller_PID(2500.0);
             send(ADDRESS_ROLLER, true_roller_data);
+            //send(0x30, true_roller_data);
+            //send(0x24, true_roller_data);
         }else{
             send(ADDRESS_ROLLER, 0x80);
+            //send(0x30, 0x80);
+            //send(0x24, 0x80);
         }
-
+        
     }
+    return 0;
 }
 
 int roller_PID(float target_rpm){
@@ -66,9 +72,9 @@ int roller_PID(float target_rpm){
     roller.setInputLimits(-5000.0,5000.0);
 
     if(true_rpm <= target_rpm){
-        roller.setOutputLimits(0x84, 0xff);
+        roller.setOutputLimits(0x84, 0xee);
     }else if(true_rpm > target_rpm){
-        roller.setOutputLimits(0x00, 0x7B);
+        roller.setOutputLimits(0x20, 0x7B);
     }
 
     roller.setSetPoint(target_rpm);//目標値設定
